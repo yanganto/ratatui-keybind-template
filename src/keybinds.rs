@@ -19,7 +19,7 @@ pub enum Action {
 }
 
 /// Key binding configuration
-/// 
+///
 /// This struct manages the mapping between key events and actions for different modes.
 /// It provides a centralized way to handle keybindings, making it easy to:
 /// - Add new keybindings
@@ -37,19 +37,19 @@ impl KeyBindings {
             bindings: HashMap::new(),
         }
     }
-    
+
     /// Register a keybinding for a specific mode
     pub fn bind(&mut self, key: KeyEvent, mode: Mode, action: Action) {
         self.bindings.insert((key, mode), action);
     }
-    
+
     /// Get the action for a key event in the current mode
     pub fn get_action(&self, key: KeyEvent, mode: Mode) -> Option<Action> {
         // First try to find a mode-specific binding
         if let Some(action) = self.bindings.get(&(key, mode)) {
             return Some(*action);
         }
-        
+
         // In insert mode, any printable character becomes an InsertChar action
         if mode == Mode::Insert {
             if let KeyCode::Char(c) = key.code {
@@ -58,7 +58,7 @@ impl KeyBindings {
                 }
             }
         }
-        
+
         None
     }
 }
@@ -66,7 +66,7 @@ impl KeyBindings {
 impl Default for KeyBindings {
     fn default() -> Self {
         let mut bindings = Self::new();
-        
+
         // Normal mode bindings
         bindings.bind(
             KeyEvent::new(KeyCode::Char('q'), KeyModifiers::NONE),
@@ -113,7 +113,7 @@ impl Default for KeyBindings {
             Mode::Normal,
             Action::ShowHelp,
         );
-        
+
         // Insert mode bindings
         bindings.bind(
             KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE),
@@ -125,7 +125,7 @@ impl Default for KeyBindings {
             Mode::Insert,
             Action::DeleteChar,
         );
-        
+
         // Command mode bindings
         bindings.bind(
             KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE),
@@ -142,7 +142,7 @@ impl Default for KeyBindings {
             Mode::Command,
             Action::DeleteChar,
         );
-        
+
         // Command mode also handles character input
         for c in 'a'..='z' {
             bindings.bind(
@@ -151,7 +151,7 @@ impl Default for KeyBindings {
                 Action::InsertChar(c),
             );
         }
-        
+
         bindings
     }
 }
@@ -159,29 +159,35 @@ impl Default for KeyBindings {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_normal_mode_quit() {
         let bindings = KeyBindings::default();
         let key = KeyEvent::new(KeyCode::Char('q'), KeyModifiers::NONE);
         assert_eq!(bindings.get_action(key, Mode::Normal), Some(Action::Quit));
     }
-    
+
     #[test]
     fn test_insert_mode_char() {
         let bindings = KeyBindings::default();
         let key = KeyEvent::new(KeyCode::Char('a'), KeyModifiers::NONE);
-        assert_eq!(bindings.get_action(key, Mode::Insert), Some(Action::InsertChar('a')));
+        assert_eq!(
+            bindings.get_action(key, Mode::Insert),
+            Some(Action::InsertChar('a'))
+        );
     }
-    
+
     #[test]
     fn test_mode_specific_bindings() {
         let bindings = KeyBindings::default();
         let esc_key = KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE);
-        
+
         // ESC in insert mode should return to normal
-        assert_eq!(bindings.get_action(esc_key, Mode::Insert), Some(Action::EnterNormalMode));
-        
+        assert_eq!(
+            bindings.get_action(esc_key, Mode::Insert),
+            Some(Action::EnterNormalMode)
+        );
+
         // ESC in normal mode should do nothing (None)
         assert_eq!(bindings.get_action(esc_key, Mode::Normal), None);
     }

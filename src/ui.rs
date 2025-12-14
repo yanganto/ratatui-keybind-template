@@ -26,7 +26,11 @@ pub fn render(frame: &mut Frame, app: &App) {
 
 fn render_header(frame: &mut Frame, area: Rect) {
     let title = Paragraph::new("Ratatui Keybinding Template")
-        .style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))
+        .style(
+            Style::default()
+                .fg(Color::Cyan)
+                .add_modifier(Modifier::BOLD),
+        )
         .block(Block::default().borders(Borders::ALL));
     frame.render_widget(title, area);
 }
@@ -74,7 +78,10 @@ fn render_main_content(frame: &mut Frame, app: &App, area: Rect) {
 
 fn render_input_area(frame: &mut Frame, app: &App, area: Rect) {
     let (title, content) = match app.mode {
-        Mode::Normal => ("Normal Mode", "Press 'i' for insert, ':' for command".to_string()),
+        Mode::Normal => (
+            "Normal Mode",
+            "Press 'i' for insert, ':' for command".to_string(),
+        ),
         Mode::Insert => ("Insert Mode", format!("Input: {}", app.input)),
         Mode::Command => ("Command Mode", format!(":{}", app.input)),
     };

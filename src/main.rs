@@ -15,12 +15,12 @@ use app::App;
 
 fn main() -> Result<()> {
     color_eyre::install()?;
-    
+
     let mut terminal = setup_terminal()?;
     let result = run(&mut terminal);
-    
+
     restore_terminal()?;
-    
+
     result
 }
 
@@ -40,10 +40,10 @@ fn restore_terminal() -> Result<()> {
 
 fn run(terminal: &mut Terminal<CrosstermBackend<Stdout>>) -> Result<()> {
     let mut app = App::new();
-    
+
     loop {
         terminal.draw(|frame| ui::render(frame, &app))?;
-        
+
         if let Event::Key(key) = event::read()? {
             if let Some(action) = app.handle_key(key) {
                 if !app.perform_action(action) {
@@ -52,6 +52,6 @@ fn run(terminal: &mut Terminal<CrosstermBackend<Stdout>>) -> Result<()> {
             }
         }
     }
-    
+
     Ok(())
 }

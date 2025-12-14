@@ -32,12 +32,12 @@ impl App {
             status_message: "Press '?' for help".to_string(),
         }
     }
-    
+
     /// Handle a key event and return the corresponding action
     pub fn handle_key(&self, key: KeyEvent) -> Option<Action> {
         self.keybindings.get_action(key, self.mode)
     }
-    
+
     /// Perform an action and return false if the app should quit
     pub fn perform_action(&mut self, action: Action) -> bool {
         match action {
@@ -79,12 +79,13 @@ impl App {
                 self.mode = Mode::Normal;
             }
             Action::ShowHelp => {
-                self.status_message = "Help: q=quit, i=insert, :=command, +/k=inc, -/j=dec, r=reset".to_string();
+                self.status_message =
+                    "Help: q=quit, i=insert, :=command, +/k=inc, -/j=dec, r=reset".to_string();
             }
         }
         true
     }
-    
+
     fn execute_command(&mut self) {
         match self.input.as_str() {
             "q" | "quit" => {
