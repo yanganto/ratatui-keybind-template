@@ -48,7 +48,8 @@ pub fn render(frame: &mut Frame, _app: &App) {
     frame.render_widget(paragraph, chunks[1]);
 
     // Status bar
-    let status = Paragraph::new("Press 'q' to quit")
+    let status_text = format!("Press {} to quit", quit_keys);
+    let status = Paragraph::new(status_text)
         .style(Style::default().fg(Color::White).bg(Color::DarkGray));
     frame.render_widget(status, chunks[2]);
 }
