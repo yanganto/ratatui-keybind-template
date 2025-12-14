@@ -1,13 +1,11 @@
 # ratatui-keybind-template
-
-A template to avoid keybinding issues when your TUI goes big.
-
 This is a [Ratatui](https://github.com/ratatui/ratatui) template that provides a modular keybinding system using the [crossterm-keybind](https://github.com/yanganto/crossterm-keybind) crate for building terminal user interfaces. It demonstrates best practices for handling keybindings in a scalable way, making it easy to manage keybindings as your application grows.
 
 ## Features
 
 - **crossterm-keybind Integration**: Uses the crossterm-keybind crate for powerful keybinding management
 - **Configurable Keybindings**: Users can customize keybindings via TOML configuration files
+- **Backward Compatible**: Legacy key config still work with new release if there is only addition in keybind enum.
 - **Multiple Keybindings per Action**: Support for assigning multiple key combinations to a single action
 - **Auto-generated Config**: Generate example configuration files with `KeyEvent::to_toml_example()`
 - **Clean Syntax**: Define keybindings with derive macros using simple string notation
