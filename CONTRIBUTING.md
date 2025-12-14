@@ -4,53 +4,50 @@ Thank you for your interest in contributing! This document provides guidelines f
 
 ## Extending the Template
 
-### Adding New Actions
+### Adding New Keybinding Events
 
-1. **Define the Action**: Add a new variant to the `Action` enum in `src/keybinds.rs`:
+This template uses the [crossterm-keybind](https://github.com/yanganto/crossterm-keybind) crate for keybinding management.
+
+1. **Define the Event**: Add a new variant to the `KeyEvent` enum in `src/keybinds.rs`:
    ```rust
-   pub enum Action {
-       // ... existing actions
-       YourNewAction,
+   use crossterm_keybind::KeyBind;
+   
+   #[derive(KeyBind)]
+   pub enum KeyEvent {
+       /// Quit the application
+       #[keybindings["Control+c", "Q", "q"]]
+       Quit,
+       
+       /// Your new action - supports multiple key combinations
+       /// You can use format: "Key", "Control+Key", "Alt+Key", "Shift+Key", etc.
+       #[keybindings["h", "F1", "?"]]
+       ShowHelp,
    }
    ```
 
-2. **Register Keybindings**: Add keybindings for your action in `KeyBindings::default()`:
+2. **Handle the Event**: Update `App::handle_key()` in `src/app.rs`:
    ```rust
-   bindings.bind(
-       KeyEvent::new(KeyCode::Char('x'), KeyModifiers::NONE),
-       Mode::Normal,
-       Action::YourNewAction,
-   );
-   ```
-
-3. **Implement Action Logic**: Handle the action in `App::perform_action()` in `src/app.rs`:
-   ```rust
-   match action {
-       // ... existing actions
-       Action::YourNewAction => {
-           // Your implementation here
+   use crossterm_keybind::KeyBindTrait;
+   
+   impl App {
+       pub fn handle_key(&mut self, key: crossterm::event::KeyEvent) -> bool {
+           if KeyBindEvent::Quit.match_any(&key) {
+               return false;
+           }
+           if KeyBindEvent::ShowHelp.match_any(&key) {
+               // Your implementation here
+               return true;
+           }
+           true
        }
    }
    ```
 
-### Adding New Modes
-
-1. **Define the Mode**: Add a variant to the `Mode` enum in `src/app.rs`:
+3. **Update UI** (Optional): Display the keybinding in `src/ui.rs`:
    ```rust
-   #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-   pub enum Mode {
-       Normal,
-       Insert,
-       Command,
-       YourNewMode,
-   }
+   let help_keys = crate::keybinds::KeyEvent::ShowHelp.key_bindings_display();
+   Line::from(format!("  {} - Show help", help_keys))
    ```
-
-2. **Add Mode-Specific Bindings**: Register keybindings for the new mode in `src/keybinds.rs`
-
-3. **Add Transition Actions**: Create actions to enter/exit your new mode
-
-4. **Update UI**: Modify `src/ui.rs` to display the new mode appropriately
 
 ### Adding Application State
 
@@ -58,7 +55,6 @@ Add new fields to the `App` struct in `src/app.rs`:
 
 ```rust
 pub struct App {
-    pub mode: Mode,
     // ... existing fields
     pub your_new_field: YourType,
 }
@@ -71,57 +67,44 @@ Don't forget to initialize it in `App::new()`.
 The UI is rendered in `src/ui.rs`. The main `render()` function divides the screen into sections:
 - Header: Application title
 - Main content: Your main UI elements
-- Input area: Mode-specific input display
 - Status bar: Status messages
 
-Modify these functions to customize the appearance of your application.
+Modify the `render()` function to customize the appearance of your application.
 
 ## Best Practices
 
-### Keybinding Organization
+### Keybinding Organization with crossterm-keybind
 
-- Group related keybindings together
-- Use consistent key patterns across modes
-- Document non-obvious keybindings
-- Consider adding a help screen with all keybindings
+- **Use descriptive comments**: Document what each keybinding does above the variant
+- **Multiple bindings**: Assign multiple key combinations for common actions (e.g., 'q' and 'Q' for quit)
+- **Standard conventions**: Follow common patterns (Ctrl+C for quit, F1 for help, etc.)
+- **Generate config examples**: Use `KeyEvent::to_toml_example()` to create user-customizable configs
 
-### Action Design
+### Keybinding Syntax
 
-- Keep actions atomic and focused on a single task
-- Use meaningful action names
-- Group related actions in the same section of the enum
+The `crossterm-keybind` crate supports various key formats:
+- Single keys: `"a"`, `"A"`, `"1"`, `"F1"`, `"Enter"`, `"Esc"`
+- With modifiers: `"Control+c"`, `"Alt+Enter"`, `"Shift+Tab"`
+- Special keys: `"Up"`, `"Down"`, `"Left"`, `"Right"`, `"PageUp"`, `"Home"`, etc.
 
 ### State Management
 
 - Keep application state in the `App` struct
-- Use the `perform_action` method for all state changes
-- Avoid side effects in `handle_key` - it should only map keys to actions
-
-### Mode Management
-
-- Clearly define the purpose of each mode
-- Provide easy ways to switch between modes (usually ESC to return to normal)
-- Display the current mode prominently in the UI
+- Return `false` from `handle_key()` to quit the application
+- Return `true` from `handle_key()` to continue running
 
 ## Testing
 
-Add tests for your new functionality:
+For testing keybindings, it's recommended to:
+1. Test the application manually by running `cargo run`
+2. Test keybinding parsing by verifying the TOML example generation
+3. Write integration tests for your application logic
 
-```rust
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_your_new_feature() {
-        // Your test here
-    }
-}
-```
+Note: Unit testing crossterm-keybind's match_any requires careful initialization handling.
 
-Run tests with:
+Run your application with:
 ```bash
-cargo test
+cargo run
 ```
 
 ## Code Style
@@ -136,36 +119,46 @@ And linting:
 cargo clippy
 ```
 
-## Loading Keybindings from Configuration
+## Configuration File Support
 
-For a real application, you might want to load keybindings from a configuration file. Here's a pattern you can follow:
+The `crossterm-keybind` crate provides built-in config file support:
 
-1. Use `serde` to deserialize keybinding configuration
-2. Create a method to load bindings from a config file
-3. Call this method when initializing `KeyBindings`
+### Generating a Config Template
 
-Example:
 ```rust
-use serde::{Deserialize, Serialize};
+use crossterm_keybind::KeyBindTrait;
+use crate::keybinds::KeyEvent;
 
-#[derive(Serialize, Deserialize)]
-struct KeyBindingConfig {
-    key: String,
-    modifiers: Vec<String>,
-    mode: String,
-    action: String,
-}
-
-impl KeyBindings {
-    pub fn from_config(config: Vec<KeyBindingConfig>) -> Self {
-        let mut bindings = Self::new();
-        for cfg in config {
-            // Parse and register bindings
-        }
-        bindings
-    }
-}
+// Generate a TOML config file with default keybindings
+KeyEvent::to_toml_example("keybinds.toml")?;
 ```
+
+This creates a file like:
+```toml
+# Quit the application
+quit = ["Control+c", "Q", "q"]
+
+# Show help
+show_help = ["h", "F1"]
+```
+
+### Loading Custom Configuration
+
+In `main.rs`, load the config file:
+```rust
+// Load default keybindings (no config file)
+KeyEvent::init_and_load(None)?;
+
+// Or load from a custom config file
+KeyEvent::init_and_load(Some("custom_keybinds.toml".into()))?;
+```
+
+### Allowing User Customization
+
+1. Generate a default config on first run
+2. Save it to a user config directory (e.g., `~/.config/yourapp/keybinds.toml`)
+3. Load the config on subsequent runs
+4. Users can edit the TOML file to customize keybindings
 
 ## Questions or Issues?
 
