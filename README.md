@@ -2,16 +2,16 @@
 
 A template to avoid keybinding issues when your TUI goes big.
 
-This is a [Ratatui](https://github.com/ratatui/ratatui) template that provides a modular keybinding system for building terminal user interfaces. It demonstrates best practices for handling keybindings in a scalable way, making it easy to manage keybindings as your application grows.
+This is a [Ratatui](https://github.com/ratatui/ratatui) template that provides a modular keybinding system using the [crossterm-keybind](https://github.com/yanganto/crossterm-keybind) crate for building terminal user interfaces. It demonstrates best practices for handling keybindings in a scalable way, making it easy to manage keybindings as your application grows.
 
 ## Features
 
-- **Modular Keybinding System**: Centralized keybinding management with mode-specific bindings
-- **Multiple Modes**: Support for Normal, Insert, and Command modes (inspired by Vim)
-- **Action-based Architecture**: Separates key handling from action execution
+- **crossterm-keybind Integration**: Uses the crossterm-keybind crate for powerful keybinding management
+- **Configurable Keybindings**: Users can customize keybindings via TOML configuration files
+- **Multiple Keybindings per Action**: Support for assigning multiple key combinations to a single action
+- **Auto-generated Config**: Generate example configuration files with `KeyEvent::to_toml_example()`
+- **Clean Syntax**: Define keybindings with derive macros using simple string notation
 - **Extensible Design**: Easy to add new keybindings and actions
-- **Example Application**: Includes a working example demonstrating the keybinding system
-- **Tests**: Unit tests for keybinding behavior
 
 ## Using This Template
 
@@ -33,24 +33,12 @@ cargo run
 
 ### Keybindings
 
-**Normal Mode:**
+**Default Keybindings:**
 - `q` - Quit the application
-- `k` or `+` - Increment counter
-- `j` or `-` - Decrement counter
-- `r` - Reset counter
-- `i` - Enter insert mode
-- `:` - Enter command mode
-- `?` - Show help
+- `Q` - Quit the application
+- `Ctrl+c` - Quit the application
 
-**Insert Mode:**
-- `ESC` - Return to normal mode
-- Type any character to add it to the input buffer
-
-**Command Mode:**
-- `ESC` - Return to normal mode
-- `Enter` - Execute command
-- `quit` or `q` - Quit application
-- `reset` - Reset counter
+You can customize these by generating a config file (see Configuration section below).
 
 ## Project Structure
 
@@ -58,71 +46,97 @@ cargo run
 src/
 ├── main.rs       # Application entry point and terminal setup
 ├── app.rs        # Application state and logic
-├── keybinds.rs   # Keybinding system (Action enum and KeyBindings struct)
+├── keybinds.rs   # Keybinding definitions using crossterm-keybind
 └── ui.rs         # UI rendering logic
 ```
 
 ## Architecture
 
-### Keybinding System
+### Keybinding System with crossterm-keybind
 
-The keybinding system is built around three main concepts:
+The keybinding system uses the `crossterm-keybind` crate, which provides:
 
-1. **Actions**: Enum representing all possible actions in the application
-2. **KeyBindings**: Maps key events to actions based on the current mode
-3. **Mode**: Current application mode (Normal, Insert, Command)
+1. **KeyEvent Enum**: Define keybindings using derive macros
+2. **Multiple Bindings**: Assign multiple key combinations to one action
+3. **Config Files**: Load custom keybindings from TOML files
+4. **Display Helpers**: Auto-generate help text for keybindings
 
 ### Adding New Keybindings
 
-To add a new keybinding:
+To add a new keybinding event:
 
-1. Add a new action to the `Action` enum in `src/keybinds.rs`
-2. Register the keybinding in `KeyBindings::default()` in `src/keybinds.rs`
-3. Handle the action in `App::perform_action()` in `src/app.rs`
+1. Add a new variant to the `KeyEvent` enum in `src/keybinds.rs`
+2. Use the `#[keybindings[...]]` attribute to define key combinations
+3. Handle the event in `App::handle_key()` in `src/app.rs`
 
 Example:
 
 ```rust
-// 1. Add action
-pub enum Action {
-    // ... existing actions
-    MyNewAction,
+// 1. Add to KeyEvent enum in src/keybinds.rs
+use crossterm_keybind::KeyBind;
+
+#[derive(KeyBind)]
+pub enum KeyEvent {
+    /// Quit the application
+    #[keybindings["Control+c", "Q", "q"]]
+    Quit,
+    
+    /// Your new action - press 'h' or 'F1' to trigger
+    #[keybindings["h", "F1"]]
+    ShowHelp,
 }
 
-// 2. Register keybinding
-impl Default for KeyBindings {
-    fn default() -> Self {
-        let mut bindings = Self::new();
-        // ... existing bindings
-        bindings.bind(
-            KeyEvent::new(KeyCode::Char('n'), KeyModifiers::NONE),
-            Mode::Normal,
-            Action::MyNewAction,
-        );
-        bindings
-    }
-}
-
-// 3. Handle action
+// 2. Handle in src/app.rs
 impl App {
-    pub fn perform_action(&mut self, action: Action) -> bool {
-        match action {
-            // ... existing actions
-            Action::MyNewAction => {
-                // Your logic here
-            }
+    pub fn handle_key(&mut self, key: crossterm::event::KeyEvent) -> bool {
+        if KeyBindEvent::Quit.match_any(&key) {
+            return false;
+        }
+        if KeyBindEvent::ShowHelp.match_any(&key) {
+            // Show help logic
+            return true;
         }
         true
     }
 }
 ```
 
+### Configuration
+
+Generate a default configuration file:
+
+```rust
+use crossterm_keybind::KeyBindTrait;
+use crate::keybinds::KeyEvent;
+
+// Generate example config
+KeyEvent::to_toml_example("keybinds.toml").unwrap();
+```
+
+This creates a `keybinds.toml` file:
+
+```toml
+# Quit the application
+quit = ["Control+c", "Q", "q"]
+
+# Show help
+show_help = ["h", "F1"]
+```
+
+Users can then customize the keybindings and load them:
+
+```rust
+// In main.rs
+KeyEvent::init_and_load(Some("keybinds.toml".into()))?;
+```
+
 ## Dependencies
 
 - [ratatui](https://github.com/ratatui/ratatui) - Terminal UI library
 - [crossterm](https://github.com/crossterm-rs/crossterm) - Terminal manipulation library
+- [crossterm-keybind](https://github.com/yanganto/crossterm-keybind) - Keybinding management with config support
 - [color-eyre](https://github.com/eyre-rs/color-eyre) - Error handling
-- [serde](https://github.com/serde-rs/serde) - Serialization framework (for future config file support)
+- [serde](https://github.com/serde-rs/serde) - Serialization framework (required by crossterm-keybind)
 
 ## Testing
 

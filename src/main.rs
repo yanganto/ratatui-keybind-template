@@ -4,6 +4,7 @@ use crossterm::terminal::{
     disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
 };
 use crossterm::ExecutableCommand;
+use crossterm_keybind::KeyBindTrait;
 use ratatui::prelude::*;
 use std::io::{stdout, Stdout};
 
@@ -15,6 +16,9 @@ use app::App;
 
 fn main() -> Result<()> {
     color_eyre::install()?;
+
+    // Initialize keybindings (load from config file if available)
+    keybinds::KeyEvent::init_and_load(None)?;
 
     let mut terminal = setup_terminal()?;
     let result = run(&mut terminal);
@@ -45,10 +49,8 @@ fn run(terminal: &mut Terminal<CrosstermBackend<Stdout>>) -> Result<()> {
         terminal.draw(|frame| ui::render(frame, &app))?;
 
         if let Event::Key(key) = event::read()? {
-            if let Some(action) = app.handle_key(key) {
-                if !app.perform_action(action) {
-                    break;
-                }
+            if !app.handle_key(key) {
+                break;
             }
         }
     }
