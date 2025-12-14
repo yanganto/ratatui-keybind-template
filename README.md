@@ -5,7 +5,7 @@ This is a [Ratatui](https://github.com/ratatui/ratatui) template that provides a
 
 - **crossterm-keybind Integration**: Uses the crossterm-keybind crate for powerful keybinding management
 - **Configurable Keybindings**: Users can customize keybindings via TOML configuration files
-- **Backward Compatible**: Legacy key configs still work with new release if there is only addition in keybind enum.
+- **Backward Compatible**: Legacy key configs still work with new release if there are only additions in keybind enum.
 - **Multiple Keybindings per Action**: Support for assigning multiple key combinations to a single action
 - **Auto-generated Config**: Generate example configuration files with `KeyEvent::to_toml_example()`
 - **Clean Syntax**: Define keybindings with derive macros using simple string notation
