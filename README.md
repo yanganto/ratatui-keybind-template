@@ -87,12 +87,22 @@ pub enum KeyEvent {
 // 2. Handle in src/app.rs
 impl App {
     pub fn handle_key(&mut self, key: crossterm::event::KeyEvent) -> bool {
+        // Option 1: match_any
         if KeyBindEvent::Quit.match_any(&key) {
             return false;
         }
         if KeyBindEvent::ShowHelp.match_any(&key) {
             // Show help logic
-            return true;
+        }
+
+        // Option 2 match events from dispatch method
+        for event in KeyBindEvent::dispatch(&key) {
+            match event {
+                KeyBindEvent::Quit => return false,
+                KeyBindEvent::ShowHelp => {
+                  // Show help logic
+                }
+            }
         }
         true
     }
