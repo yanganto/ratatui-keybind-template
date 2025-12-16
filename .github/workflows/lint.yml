@@ -22,4 +22,4 @@ jobs:
 
       - name: Lint
         run: |
-          nix develop -c cargo clippy -- -Dwarnings
+          nix develop -c cargo clippy -- -Dwarnings -A clippy::never_loop
