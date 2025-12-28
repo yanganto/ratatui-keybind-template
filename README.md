@@ -1,5 +1,6 @@
 # ratatui-keybind-template
-This is a [Ratatui](https://github.com/ratatui/ratatui) template that provides a modular keybinding system using the [crossterm-keybind](https://github.com/yanganto/crossterm-keybind) crate for building terminal user interfaces. It demonstrates best practices for handling keybindings in a scalable way, making it easy to manage keybindings as your application grows.
+This is a [Ratatui](https://github.com/ratatui/ratatui) template that provides a modular keybinding system using the [crossterm-keybind](https://github.com/yanganto/crossterm-keybind) crate for building terminal user interfaces. It demonstrates best practices for handling keybindings in a scalable way, making it easy to manage keybindings as your application grows.  
+Current template is for ratatui v0.30.0, you may check on tags for the template with different version of ratatui.
 
 ## Features
 
