@@ -1,7 +1,7 @@
-name: Test
+name: Build
 
 concurrency:
-  group: test-${{ github.head_ref }}
+  group: build-${{ github.head_ref }}
   cancel-in-progress: true
 
 on:
