@@ -18,7 +18,11 @@ fn main() -> Result<()> {
     color_eyre::install()?;
 
     // Initialize keybindings (load from config file if available)
-    keybinds::KeyEvent::init_and_load(None)?;
+    //
+    // NOTE: if you are not loaded a keybinds from a file, but load it from a section of config
+    // file, please refer `init_and_load` function and following document.
+    // https://github.com/yanganto/crossterm-keybind#initialization
+    keybinds::KeyEvent::init_and_load_file(None)?;
 
     let mut terminal = setup_terminal()?;
     let result = run(&mut terminal);
