@@ -252,9 +252,9 @@ dependencies = [
 
 [[package]]
 name = "crossterm-keybind"
-version = "0.4.2"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5aa43c748e6c52518225852979e772347df92904b20cc7714801f448fefd9db3"
+checksum = "5d152743c4a353f3331da8231942568d0783832ba70ca29bca180d4db7aaf20f"
 dependencies = [
  "crossterm",
  "crossterm-keybind-core",
@@ -269,9 +269,9 @@ dependencies = [
 
 [[package]]
 name = "crossterm-keybind-core"
-version = "0.4.2"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4f42cbf979f61746712938c86595d8647460738ee68bc3a748eb800454f3765"
+checksum = "9529650867fc1cfa1deb2dd2ca546ab63f266f000d7deb314964bf8aa0b0bbb1"
 dependencies = [
  "crossterm",
  "serde",
@@ -280,9 +280,9 @@ dependencies = [
 
 [[package]]
 name = "crossterm-keybind-derive"
-version = "0.4.2"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49567336e727f79fd76b2585247717c427a3cc0fd0e034cfb64f99f6db504431"
+checksum = "68df8ceebb23e22e74b5fcefea1fc5721e8c2d715028cde399938f8a0cb29701"
 dependencies = [
  "convert_case 0.11.0",
  "crossterm-keybind-core",
